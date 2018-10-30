@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <fstream>
 
 std::string getEntireDialogue(SubtitleParser * parser)
 {
@@ -40,15 +41,15 @@ std::string formatDialogue(std::string dialogue)
 std::map<std::string, int> createWordAppearancesMap(std::istringstream & dialogue)
 {
 	std::map<std::string, int> wordAppearances;
+	std::istream_iterator<std::string> eos;
 	std::string word;
-	dialogue >> word;
-	while(!dialogue.eof()){
+	for(std::istream_iterator<std::string> iterator(dialogue); iterator != eos; iterator++){
+		word = *iterator;
 		if(wordAppearances.count(word) == 0){
 			wordAppearances[word] = 1;
 		}else{
 			wordAppearances[word]++;
 		}
-		dialogue >> word;
 	}
 	return wordAppearances;
 }
@@ -61,16 +62,22 @@ std::vector<std::pair<std::string, int>> createWordAppearancesVector(const std::
 
 int main(int argc, char * argv[])
 {
+	std::ostream * out;
 	if(argc <= 1){
 		std::cout << "Please pass the subtitle file as an argument" << std::endl;
 	}else{
+		if(argc == 2){
+			out = &std::cout;
+		}else{
+			out = new std::ofstream(argv[2]);
+		}
 		SubtitleParserFactory * subParserFactory = new SubtitleParserFactory(argv[1]);
 		SubtitleParser * parser = subParserFactory->getParser();
 		std::istringstream dialogue(formatDialogue(getEntireDialogue(parser)));
 		std::vector<std::pair<std::string, int>> wordAppearances = createWordAppearancesVector(createWordAppearancesMap(dialogue));
 		std::sort(wordAppearances.begin(), wordAppearances.end(), [](const std::pair<std::string, int> & a, const std::pair<std::string, int> & b){return a.second > b.second;});
 		for(auto wordAppearance : wordAppearances){
-			std::cout << wordAppearance.second << "\t" << wordAppearance.first << std::endl;
+			*out << wordAppearance.second << "\t" << wordAppearance.first << std::endl;
 		}
 	}
 	return 0;
