@@ -19,7 +19,7 @@ std::string getEntireDialogue(SubtitleParser * parser)
 
 bool isInvalid(char c)
 {
-	const static std::string invalid = ".!?,;[](){}/\\*";
+	const static std::string invalid = ".!?,;[](){}/\\*\"";
 	return invalid.find(c) != std::string::npos;
 }
 
